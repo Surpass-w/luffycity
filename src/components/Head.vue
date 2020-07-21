@@ -23,36 +23,51 @@
 
             <div class="right-part">
                 <div>
-                    <span>登录</span>
+                    <span @click="login">登录</span>
                     <span class="line">|</span>
                     <span>注册</span>
                 </div>
-            </div>
+    		</div>
+            <Login @close="close_login" v-if="is_login"/>
         </div>
     </div>
+
 </template>
 
 <script>
+    import Login from './Login'
     export default {
         name: "Header",
         data() {
             return {
                 url_path: sessionStorage.url_path || '/',
+                is_login:false
             }
         },
         methods: {
             goPage(url_path) {
-                // 已经是当前路由就没有必要重新跳转
+                // 传入的路由如果不是当前所在路径，就跳转
                 if (this.url_path !== url_path) {
                     this.$router.push(url_path);
                 }
                 sessionStorage.url_path = url_path;
             },
+            login(){
+                this.is_login=true
+            },
+            close_login(){
+                this.is_login=false
+            }
         },
         created() {
             sessionStorage.url_path = this.$route.path;
             this.url_path = this.$route.path;
+        },
+        components:{
+            Login,
         }
+
+
     }
 </script>
 
