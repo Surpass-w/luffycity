@@ -22,26 +22,37 @@
             </ul>
 
             <div class="right-part">
-                <div>
-                    <span @click="login">登录</span>
+                <div v-if="!username">
+                    <span @click="put_login">登录</span>
                     <span class="line">|</span>
-                    <span>注册</span>
+                    <span @click="put_register">注册</span>
                 </div>
-    		</div>
-            <Login @close="close_login" v-if="is_login"/>
+                <div v-else>
+                    <span>{{ username }}</span>
+                    <span class="line">|</span>
+                    <span @click="logout">注销</span>
+                </div>
+            </div>
+            <Login v-if="is_login" @close="close_login" @go="put_register" @login_success="login_success"/>
+            <Register v-if="is_register" @close="close_register" @go="put_login"/>
         </div>
     </div>
 
 </template>
 
 <script>
-    import Login from './Login'
+    import Login from './Login';
+    import Register from "./Register";
+
     export default {
         name: "Header",
         data() {
             return {
                 url_path: sessionStorage.url_path || '/',
-                is_login:false
+                is_login: false,
+                is_register: false,
+                token: '',
+                username: '',
             }
         },
         methods: {
@@ -52,19 +63,45 @@
                 }
                 sessionStorage.url_path = url_path;
             },
-            login(){
-                this.is_login=true
+            put_login() {
+                this.is_login = true;
+                this.is_register = false;
             },
-            close_login(){
-                this.is_login=false
+            put_register() {
+                this.is_login = false;
+                this.is_register = true;
+            },
+            close_login() {
+                this.is_login = false;
+            },
+            close_register() {
+                this.is_register = false;
+            },
+            login_success() {
+                this.token = this.$cookies.get('token');
+                this.username = this.$cookies.get('username');
+            },
+            logout() {
+                //清除cookie
+                this.$cookies.remove('username');
+                this.$cookies.remove('token');
+                //清除变量值
+                this.username = '';
+                this.token = '';
             }
         },
         created() {
             sessionStorage.url_path = this.$route.path;
             this.url_path = this.$route.path;
+
+            //当页面一创建，就去cookie中取token和cookie
+            this.username = this.$cookies.get('username');
+            this.token = this.$cookies.get('token');
         },
-        components:{
+
+        components: {
             Login,
+            Register,
         }
 
 

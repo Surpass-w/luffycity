@@ -29,7 +29,7 @@
             // }).catch(function (error) {
             //   console.log(error)
             // })
-            this.$axios.get('http://127.0.0.1:8015/home/banner/').then(response => {
+            this.$axios.get(this.$settings.base_url + '/home/banner/').then(response => {
                 console.log(response.data)  //response.data才是真正后台返回的数据
             }).catch(errors => {
                 console.log(errors)
