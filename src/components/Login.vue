@@ -154,14 +154,22 @@
                             'Content-Type': 'application/json',
                         },
                     }).then(response => {
-                        //把用户信息保存到cookie中\
-                        this.$cookies.set('token', response.data.data.token, '7d');
-                        this.$cookies.set('username', response.data.data.username, '7d');
-                        //关闭登录窗口
-                        this.$emit('close');
-                        //给父组件传递一个事件，让它从cookie中取出token和username
-                        this.$emit('login_success');
-
+                        //把用户信息保存到cookie中
+                        if (response.data.code === 100) {
+                            this.$cookies.set('token', response.data.data.token, '7d');
+                            this.$cookies.set('username', response.data.data.username, '7d');
+                            //关闭登录窗口
+                            this.$emit('close');
+                            //给父组件传递一个事件，让它从cookie中取出token和username
+                            this.$emit('login_success');
+                        } else {
+                            this.$message({
+                                message: '账号不存在,或者密码错误',
+                                type: 'warning',
+                            });
+                            this.username = '';
+                            this.password = '';
+                        }
                     }).catch(errors => {
                         console.log(errors);
                     })

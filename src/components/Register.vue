@@ -8,11 +8,11 @@
                 </div>
                 <el-form>
                     <el-input
-                            placeholder="手机号"
-                            prefix-icon="el-icon-phone-outline"
-                            v-model="mobile"
+                            placeholder="手机号/邮箱"
+                            prefix-icon="el-icon-user"
+                            v-model="account"
                             clearable
-                            @blur="check_mobile">
+                            @blur="check_account">
                     </el-input>
                     <el-input
                             placeholder="密码"
@@ -24,10 +24,10 @@
                     <el-input
                             placeholder="验证码"
                             prefix-icon="el-icon-chat-line-round"
-                            v-model="sms"
+                            v-model="code"
                             clearable>
                         <template slot="append">
-                            <span class="sms" @click="send_sms">{{ sms_interval }}</span>
+                            <span class="code" @click="send_code">{{ code_interval }}</span>
                         </template>
                     </el-input>
                     <el-button type="primary" @click="register">注册</el-button>
@@ -45,10 +45,10 @@
         name: "Register",
         data() {
             return {
-                mobile: '',
+                account: '',
                 password: '',
-                sms: '',
-                sms_interval: '获取验证码',
+                code: '',
+                code_interval: '获取验证码',
                 is_send: false,
             }
         },
@@ -59,26 +59,25 @@
             go_login() {
                 this.$emit('go')
             },
-            check_mobile() {
-                if (!this.mobile) return;
+            check_account() {
+                if (!this.account) return;
                 //字符串.match(/正则表达式/)
-                if (!this.mobile.match(/^1[3-9][0-9]{9}$/)) {
+                if (!this.account.match(/^1[3-9][0-9]{9}$/) && !this.account.match(/^.+@.+$/)) {
                     this.$message({
-                        message: '手机号有误',
+                        message: '账号有误',
                         type: 'warning',
                         duration: 1000,
                         onClose: () => {
-                            this.mobile = '';
+                            this.account = '';
                         }
                     });
                     return false;
                 }
                 //发送axios请求,去后端校验手机号
-                this.$axios.get(this.$settings.base_url + '/user/check_phone/', {params: {'telephone': this.mobile}}).then(response => {
-                    console.log(response.data.code);
+                this.$axios.get(this.$settings.base_url + '/user/check_account/', {params: {'account': this.account}}).then(response => {
                     if (response.data.code === 100) {
                         this.$message({
-                            message: '手机号已注册，请直接登录',
+                            message: '账号已注册，请直接登录',
                             type: 'warning',
                             duration: 1000,
                             onClose: () => {
@@ -97,17 +96,17 @@
                     console.log(errors);
                 });
             },
-            send_sms() {
+            send_code() {
                 //this.is_send  是否允许点击按钮
                 if (!this.is_send) return;
                 this.is_send = false;
-                let sms_interval_time = 60;
-                this.sms_interval = "发送中...";
+                let code_interval_time = 60;
+                this.code_interval = "发送中...";
                 this.$axios({
-                    url: this.$settings.base_url + '/user/send_msg/',
+                    url: this.$settings.base_url + '/user/send_code/',
                     method: 'get',
                     params: {
-                        'telephone': this.mobile,
+                        'account': this.account,
                     }
                 }).then(response => {
                     if (response.data.code === 1) {
@@ -120,22 +119,22 @@
                 });
 
                 let timer = setInterval(() => { //定时器
-                    if (sms_interval_time <= 1) {
+                    if (code_interval_time <= 1) {
                         clearInterval(timer);  //如果小于等于1，清除定时器
-                        this.sms_interval = "获取验证码";
+                        this.code_interval = "获取验证码";
                         this.is_send = true; // 重新回到可以点击的状态
                     } else {
-                        sms_interval_time -= 1;
-                        this.sms_interval = `${sms_interval_time}秒后再发`;
+                        code_interval_time -= 1;
+                        this.code_interval = `${code_interval_time}秒后再发`;
                     }
                 }, 1000); //每隔一秒触发一次
             },
             register() {
-                if (this.mobile && this.sms && this.password) {
+                if (this.account && this.code && this.password) {
                     this.$axios({
                         url: this.$settings.base_url + '/user/register/',
                         method: 'post',
-                        data: JSON.stringify({'telephone': this.mobile, 'code': this.sms, 'password': this.password}),
+                        data: JSON.stringify({'account': this.account, 'code': this.code, 'password': this.password}),
                         headers: {
                             'Content-Type': 'application/json',
                         }
@@ -155,8 +154,8 @@
                                 type: 'error',
                                 duration: 1000,
                                 onClose: () => {
-                                    this.mobile = '';
-                                    this.sms = '';
+                                    this.account = '';
+                                    this.code = '';
                                     this.password = '';
                                 }
                             });
@@ -253,7 +252,7 @@
         cursor: pointer;
     }
 
-    .sms {
+    .code {
         color: orange;
         cursor: pointer;
         display: inline-block;
